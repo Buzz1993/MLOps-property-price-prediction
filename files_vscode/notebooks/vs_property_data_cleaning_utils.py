@@ -4,6 +4,11 @@ import re
 from pathlib import Path
 import ast
 
+
+def load_data(data_path: Path) -> pd.DataFrame:
+    df = pd.read_csv(data_path)
+    return df
+
 def basic_cleaning(data : pd.DataFrame):
     df = data.copy()
     
@@ -977,13 +982,13 @@ def basic_cleaning(data : pd.DataFrame):
 
     #amenities
     # Select columns that start with 'am_' and include 'id'
-    am_cols = ['id'] + [col for col in df.columns if col.startswith('am_')]
+    #am_cols = ['id'] + [col for col in df.columns if col.startswith('am_')]
     
     # Create a separate DataFrame with those columns
-    am_df = df[am_cols].copy()
+    #am_df = df[am_cols].copy()
     
     # Drop 'am_' columns from the original DataFrame (keep 'id')
-    df = df.drop(columns=[col for col in df.columns if col.startswith('am_')])
+    #df = df.drop(columns=[col for col in df.columns if col.startswith('am_')])
 
     #--------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1175,29 +1180,29 @@ def basic_cleaning(data : pd.DataFrame):
             ],axis=1,inplace=True)
     print(df.shape)
     print(df.columns)
-    return df,am_df
-    
-    
+    return df
+
+def property_missingness_identification(data: pd.DataFrame) -> pd.DataFrame:
+    df = data.copy()
+    #drop more than 70% missing value columns 
+    cols_to_drop = ['tourist_mean_km', 'tourist_min_km', 'hospital_mean_km', 'hospital_min_km']
+    df = df.drop(columns=cols_to_drop)
+    print(df.shape)
+    return df
 
 
+def perform_property_data_cleaning(data: pd.DataFrame, saved_data_path: Path) -> None:
+    cleaned_data = (
+        data
+        .pipe(basic_cleaning)
+        .pipe(property_missingness_identification)
+    )
+    cleaned_data.to_csv(saved_data_path, index=False)
 
 if __name__ == "__main__":
-    from pathlib import Path
-    import pandas as pd
-
-    # Go up 3 levels: notebooks/ -> py files-vscode/ -> PROPERTY_PROJECT/
     root_path = Path(__file__).parent.parent.parent
-
     data_load_path = root_path / "data" / "f_original magicbricks cleaned 12022 data.csv"
+    cleaned_data_save_path = root_path / "files_vscode" / "data" / "py_cleaned_data.csv"
 
-    print("Loading data from:", data_load_path)
-    df = pd.read_csv(data_load_path)
-    print("Data loaded successfully.")
-
-    # Call your cleaning function
-    from vs_property_data_cleaning_utils import basic_cleaning  # if needed
-    cleaned_df, am_df = basic_cleaning(df)
-
-    # Save the cleaned data
-    cleaned_df.to_csv(root_path / "files_vscode" / "data" / "py_cleaned_data.csv", index=False)
-    print("Data cleaned and saved to py_cleaned_data.csv")
+    df = load_data(data_load_path)
+    perform_property_data_cleaning(df, cleaned_data_save_path)

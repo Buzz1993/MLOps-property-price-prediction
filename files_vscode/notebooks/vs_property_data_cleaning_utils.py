@@ -1205,4 +1205,5 @@ if __name__ == "__main__":
     cleaned_data_save_path = root_path / "files_vscode" / "data" / "py_cleaned_data.csv"
 
     df = load_data(data_load_path)
-    perform_property_data_cleaning(df, cleaned_data_save_path)
+    perform_property_data_cleaning(df, saved_data_path = cleaned_data_save_path)
+
